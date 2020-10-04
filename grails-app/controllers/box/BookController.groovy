@@ -4,21 +4,65 @@ package box
 import grails.rest.*
 import grails.converters.*
 import grails.gorm.transactions.Transactional
+import java.time.LocalDate
 
 class BookController {
 	static responseFormats = ['json']
 	
     def index() { 
         def result = [valid: false]
-        
-        def books = Book.list()
-        def totalCount = Book.count()
-        
-        result.data = books
-        result.totalCount = totalCount
+
+        def qp = params
+
+        def filter = new BookFilter()
+
+        bindData(filter, qp.filter)
+
+        filter = filter.properties
+
+        def booksCriteria = Book.where{}.build {
+
+            if(filter.titleEng__ilike){
+                ilike 'titleEng', "%${filter.titleEng__ilike}%"
+            }
+            
+            if(filter.price__gt){
+                gt 'price', filter.price__gt
+            }
+
+            if(filter.isRead != null){
+                eq 'isRead', filter.isRead
+            }
+
+            if(filter.since){
+                gt 'since', filter.since
+            }
+
+            if(filter.since1 && filter.since2){
+                between 'since', filter.since1, filter.since2
+            }
+
+            if(filter.bookCateId){
+                eq 'category.id', filter.bookCateId
+            }
+
+            if(filter.authorTitle){
+                authors {
+                    author {
+                        ilike 'titleEng', "%${filter.authorTitle}%"
+                    }
+                }
+            }
+            
+        }
+
+        result.data = booksCriteria.list(offset: qp.offset ?: 0, max: qp.max ?: 10)
+        result.totalCount = booksCriteria.count()
         result.valid = true
 
         render(result as JSON)
+        
+
     }
 
     def show(Long id){
@@ -68,4 +112,15 @@ class BookController {
     }
 
 
+}
+
+class BookFilter {
+    String titleEng__ilike
+    Double price__gt
+    Boolean isRead
+    LocalDate since
+    LocalDate since1
+    LocalDate since2
+    String authorTitle
+    Long bookCateId 
 }

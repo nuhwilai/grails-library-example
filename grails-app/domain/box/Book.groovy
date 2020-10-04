@@ -9,6 +9,12 @@ class Book {
     double price
     LocalDate since
 
+    boolean isRead = true
+
+    static belongsTo = [category: BookCategory, location: Location]
+
+    static hasMany = [authors: BookAuthor]
+
     static constraints = {
     }
 }
