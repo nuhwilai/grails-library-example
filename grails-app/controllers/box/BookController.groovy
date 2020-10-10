@@ -1,6 +1,6 @@
 package box
 
-
+import grails.validation.ValidationException
 import grails.rest.*
 import grails.converters.*
 import grails.gorm.transactions.Transactional
@@ -60,9 +60,7 @@ class BookController {
         result.totalCount = booksCriteria.count()
         result.valid = true
 
-        render(result as JSON)
-        
-
+        render(view: "index", model: [data: result.data])
     }
 
     def show(Long id){
@@ -72,14 +70,25 @@ class BookController {
         result.valid = true
         result.data = book
         
-        render(result as JSON)
+        render(view: "show", model: [data: result.data])
     }
 
     def save(Book book){
         def result = [valid: false]
-        book.save(failOnError: true)
-        result.data = book
-        result.valid = true
+        try{
+            if(book.hasErrors()){
+                respond book.errors
+                return
+            }
+            book.save(failOnError: true)
+            result.data = book
+            result.valid = true
+        }catch(ValidationException error){
+            respond book.errors
+            return
+        }catch(error){
+            result.reason = error.message
+        }
         render(result as JSON)
     }
 

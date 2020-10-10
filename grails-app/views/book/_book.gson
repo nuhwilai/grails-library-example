@@ -1,0 +1,9 @@
+import box.Book
+
+model {
+    Book book
+}
+
+json g.render(book, [excludes:['authors', 'category']]){
+    category tmpl.bookCategory(book.category)
+}

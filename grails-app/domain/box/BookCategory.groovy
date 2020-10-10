@@ -8,5 +8,6 @@ class BookCategory {
     double findRatePerDay
 
     static constraints = {
+        title 'blank': false
     }
 }

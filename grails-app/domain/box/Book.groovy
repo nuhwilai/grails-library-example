@@ -16,5 +16,6 @@ class Book {
     static hasMany = [authors: BookAuthor]
 
     static constraints = {
+        titleTH blank: false, nullable: false
     }
 }
